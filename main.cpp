@@ -110,22 +110,16 @@ void buildVertices() {
 			k+=0.5f;
 			break;
 		}
-		
 		vertexVec.push_back(tempVertex);
-
 	}
+
 }
 
 void buildIndices() {
 	int j = 0;
-	//for (int j = 0; j < 3; ++j) {
-			for (int i = 0; i < MAX_ROW; i+=2) {
-				indexVec.push_back(i); indexVec.push_back(i+1); indexVec.push_back(i+2);
-				indexVec.push_back(i+2); indexVec.push_back(i+1); indexVec.push_back(i+3);
-		/*myIndices[0] = j; myIndices[1] = j+1; myIndices[2] = j+2; 
-		myIndices[3] = j+2; myIndices[4] = j+1; myIndices[5] = j+3; 
-		myIndices[6] = j+2; myIndices[7] = j+3; myIndices[8] = j+4; 
-			}*/
+	for (int i = 0; i < MAX_ROW; i+=2) {
+		indexVec.push_back(i); indexVec.push_back(i+1); indexVec.push_back(i+2);
+		indexVec.push_back(i+2); indexVec.push_back(i+1); indexVec.push_back(i+3);
 	}
 }
 
@@ -207,7 +201,7 @@ void RenderFunction() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-	glDrawElements(GL_TRIANGLE_STRIP, 3, GL_UNSIGNED_BYTE, (GLvoid*)0);
+	glDrawElements(GL_TRIANGLE_STRIP, 15, GL_UNSIGNED_BYTE, (GLvoid*)0);
 
 	glfwSwapBuffers();
 }
@@ -219,6 +213,7 @@ void Cleanup() {
 }
 
 void Initialize() {
+	float zoomFactor = 1.0f;
 	GLenum GlewInitResult;
 
 	glfwInit();
@@ -235,10 +230,16 @@ void Initialize() {
 		exit(EXIT_FAILURE);
 	}
 
+	glMatrixMode(GL_PROJECTION);
+
+	gluPerspective(50.0*zoomFactor, (float)SCREEN_WIDTH/(float)SCREEN_HEIGHT, -1, 0);
+	//glMatrixMode(GL_PROJECTION);
+
 	buildIndices();
 	buildVertices();
 	CreateShaders();
 	CreateVBO();
+
 
 	glClearColor(0, 0, 0, 0);
 }
