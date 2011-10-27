@@ -109,10 +109,18 @@ void buildVertices() {
 
 void buildIndices() {
 	// I think i need to build indices per row as well...so gotta fix this before multiple rows will work properly
-	int j = 0;
-	for (int i = 0; i < MAX_PER_ROW; i+=2) {
-		indexVec.push_back(i); indexVec.push_back(i+1); indexVec.push_back(i+2);
-		indexVec.push_back(i+2); indexVec.push_back(i+1); indexVec.push_back(i+3);
+	/* Don't know if ill need to do my voodoo magic index code yet.... it might just merge the vertices and 
+		share the shit 
+		i - has to be able to hold it's count outside of the inner loop.
+	*/
+	//int index_counter = 1;
+	int i = 0;
+	for (int k = 0; k < MAX_ROWS; ++k) {
+		for (; i < MAX_PER_ROW; i+=2) {
+			indexVec.push_back(i); indexVec.push_back(i+1); indexVec.push_back(i+2);
+			indexVec.push_back(i+2); indexVec.push_back(i+1); indexVec.push_back(i+3);
+		}
+		//k+=2;
 	}
 }
 
