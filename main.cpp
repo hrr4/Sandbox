@@ -90,29 +90,22 @@ void CreateVBO() {
 }
 
 void buildVertices() {
-	float k = 0.5f;
-	int j = 0;
+	float x = -0.5f;
+	float y = 0.3f;
+	bool top = true;
 	Vertex tempVertex;
 
 	for (int i = 0; i < MAX_ROW; ++i) {
-		switch(j) {
-		case 0:
-			tempVertex.x = -k; tempVertex.y = k; tempVertex.z = 0;
-			j++;
-			break;
-		case 1:
-			tempVertex.x = -k; tempVertex.y = -k; tempVertex.z = 0;
-			j++;
-			break;
-		case 2:
-		tempVertex.x = k; tempVertex.y = k; tempVertex.z = 0;
-			j = 0;
-			k+=0.5f;
-			break;
+		if (top == true) {
+			tempVertex.x = x; tempVertex.y = y; tempVertex.z = 0;
+			top = false;
+		} else if (top == false) {
+			tempVertex.x = x; tempVertex.y = -y; tempVertex.z = 0;
+			x+=0.5;
+			top = true;
 		}
 		vertexVec.push_back(tempVertex);
 	}
-
 }
 
 void buildIndices() {
@@ -201,7 +194,7 @@ void RenderFunction() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-	glDrawElements(GL_TRIANGLE_STRIP, 15, GL_UNSIGNED_BYTE, (GLvoid*)0);
+	glDrawElements(GL_TRIANGLE_STRIP, 9, GL_UNSIGNED_BYTE, (GLvoid*)0);
 
 	glfwSwapBuffers();
 }
@@ -232,8 +225,8 @@ void Initialize() {
 
 	glMatrixMode(GL_PROJECTION);
 
-	gluPerspective(50.0*zoomFactor, (float)SCREEN_WIDTH/(float)SCREEN_HEIGHT, -1, 0);
-	//glMatrixMode(GL_PROJECTION);
+	gluPerspective(30.0*zoomFactor, (float)SCREEN_WIDTH/(float)SCREEN_HEIGHT, -1, 0);
+	glMatrixMode(GL_MODELVIEW);
 
 	buildIndices();
 	buildVertices();
