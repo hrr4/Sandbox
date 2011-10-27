@@ -4,12 +4,13 @@
 #include <GL\glfw.h>
 #include <vector>
 
-const int MAX_ROW = 15;
+const int MAX_PER_ROW = 15;
+const int MAX_ROWS = 5;
 const int SCREEN_WIDTH = 640;
 const int SCREEN_HEIGHT = 480;
 
 struct Vertex {
-	float x, y, z; // Vertex
+	float x, y, z, w; // Vertex
 	float nx, ny, nz; // Normal
 	float s0, t0; // Texcoord
 };
@@ -57,9 +58,6 @@ void CreateVBO() {
 	const size_t BufferSize = vertexVec.size()*sizeof(Vertex);
 	const size_t VertexSize = sizeof(Vertex);
 	const size_t IndexSize = sizeof(indexVec);
-	/*const size_t BufferSize2 = sizeof(myVertices);
-	const size_t VertexSize2 = sizeof(myVertices[0]);
-	const size_t IndexSize2 = sizeof(myIndices);*/
 
 	glGenBuffers(1, &VboId);
 
@@ -67,18 +65,15 @@ void CreateVBO() {
 	glBindVertexArray(VaoId);
 
 	glBindBuffer(GL_ARRAY_BUFFER, VboId);
-	//glBufferData(GL_ARRAY_BUFFER, BufferSize2, myVertices, GL_STATIC_DRAW);
 	glBufferData(GL_ARRAY_BUFFER, BufferSize, &vertexVec[0], GL_STATIC_DRAW);
 
-	//glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, VertexSize2, 0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, VertexSize, 0);
+	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, VertexSize, 0);
 
 	glEnableVertexAttribArray(0);
 
 	// Pushing Indices 
 	glGenBuffers(1, &IndexBufferId);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IndexBufferId);
-	//glBufferData(GL_ELEMENT_ARRAY_BUFFER, IndexSize2, myIndices, GL_STATIC_DRAW);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, IndexSize, &indexVec[0], GL_STATIC_DRAW);
 
 	ErrorCheckValue = glGetError();
@@ -95,22 +90,27 @@ void buildVertices() {
 	bool top = true;
 	Vertex tempVertex;
 
-	for (int i = 0; i < MAX_ROW; ++i) {
-		if (top == true) {
-			tempVertex.x = x; tempVertex.y = y; tempVertex.z = 0;
-			top = false;
-		} else if (top == false) {
-			tempVertex.x = x; tempVertex.y = -y; tempVertex.z = 0;
-			x+=0.5;
-			top = true;
+	for (int j = 0; j < MAX_ROWS; ++j) {
+		for (int i = 0; i < MAX_PER_ROW; ++i) {
+			if (top == true) {
+				tempVertex.x = x; tempVertex.y = y; tempVertex.z = 0; tempVertex.w = 1.0f;
+				top = false;
+			} else if (top == false) {
+				tempVertex.x = x; tempVertex.y = -y; tempVertex.z = 0; tempVertex.w = 1.0f;
+				x+=0.5;
+				top = true;
+			}
+
+			vertexVec.push_back(tempVertex);
 		}
-		vertexVec.push_back(tempVertex);
+		y-=0.6f;
 	}
 }
 
 void buildIndices() {
+	// I think i need to build indices per row as well...so gotta fix this before multiple rows will work properly
 	int j = 0;
-	for (int i = 0; i < MAX_ROW; i+=2) {
+	for (int i = 0; i < MAX_PER_ROW; i+=2) {
 		indexVec.push_back(i); indexVec.push_back(i+1); indexVec.push_back(i+2);
 		indexVec.push_back(i+2); indexVec.push_back(i+1); indexVec.push_back(i+3);
 	}
@@ -119,7 +119,6 @@ void buildIndices() {
 void DestroyVBO() {
 	GLenum ErrorCheckValue = glGetError();
 
-	//glDisableVertexAttribArray(1);
 	glDisableVertexAttribArray(0);
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -194,7 +193,7 @@ void RenderFunction() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-	glDrawElements(GL_TRIANGLE_STRIP, 9, GL_UNSIGNED_BYTE, (GLvoid*)0);
+	glDrawElements(GL_TRIANGLE_STRIP, MAX_PER_ROW*MAX_ROWS, GL_UNSIGNED_BYTE, (GLvoid*)0);
 
 	glfwSwapBuffers();
 }
@@ -214,7 +213,6 @@ void Initialize() {
 	glfwOpenWindow(640, 480, 24, 24, 24, 24, 24, 24, GLFW_WINDOW);
 
 	glfwSetWindowSizeCallback(ResizeFunction);
-	//glutDisplayFunc(RenderFunction);
 
 	glewExperimental = GL_TRUE;
 	GlewInitResult = glewInit();
@@ -225,7 +223,8 @@ void Initialize() {
 
 	glMatrixMode(GL_PROJECTION);
 
-	gluPerspective(30.0*zoomFactor, (float)SCREEN_WIDTH/(float)SCREEN_HEIGHT, -1, 0);
+	glLoadIdentity();
+	gluPerspective(100.0*zoomFactor, (float)SCREEN_WIDTH/(float)SCREEN_HEIGHT, -1, 1);
 	glMatrixMode(GL_MODELVIEW);
 
 	buildIndices();
